@@ -10,254 +10,252 @@ import textwrap
 #     l = Label(win, text='Toplevel', font='Arial 15 bold', fg='Black').pack()
 #     # win.overrideredirect(1)
 
+class crimes:
+    def __init__(self, root):
+        self.tc_label = None
+        self.remove_button = None
+        self.tc_combo = None
+        self.select_button = None
+        self.update_button = None
+        self.add_button = None
+        self.button_frame = None
+        self.pc_entry = None
+        self.dc_entry = None
+        self.dc_label = None
+        self.data_frame = None
+        self.id_entry = None
+        self.id_label = None
+        self.root = root
+        self.my_tree = None
+        self.pc_label = None
 
-def on_column_click(event):
-    remove_all()
-    col_index = my_tree.identify_column(event.x)
-    conn = sqlite3.connect('Interpol.db')
-    c = conn.cursor()
-    global records
-    # print("Нажатие на колонку номер", col_index.index(1))
-    if col_index == '#2':
+        tree_frame = Frame(root)
+        tree_frame.pack(pady=10)
+
+        tree_scroll = Scrollbar(tree_frame)
+        tree_scroll.pack(side=RIGHT, fill=Y)
+
+        self.my_tree = ttk.Treeview(tree_frame, yscrollcommand=tree_scroll.set, selectmode="extended", height=10)
+        self.my_tree.pack()
+
+        tree_scroll.config(command=self.my_tree.yview)
+        # Define columns
+        self.my_tree['columns'] = ("id", "date_of_crime", "place_of_crime", "type_c")
+        self.run_crimes()
+
+    def on_column_click(self, event):
+        self.remove_all()
+        col_index = self.my_tree.identify_column(event.x)
+        conn = sqlite3.connect('Interpol.db')
+        c = conn.cursor()
+        global records
+        # print("Нажатие на колонку номер", col_index.index(1))
+        if col_index == '#2':
+            c.execute("""SELECT crime.id, date_of_crime, place_of_crime, type_of_crime.name
+                    FROM crime
+                    join type_of_crime on crime.type_c = type_of_crime.id order by date_of_crime desc;
+                    """)
+            records = c.fetchall()
+
+        if col_index == '#3':
+            c.execute("""SELECT crime.id, date_of_crime, place_of_crime, type_of_crime.name
+                    FROM crime
+                    join type_of_crime on crime.type_c = type_of_crime.id order by place_of_crime;
+                    """)
+            records = c.fetchall()
+
+        if col_index == '#4':
+            c.execute("""SELECT crime.id, date_of_crime, place_of_crime, type_of_crime.name
+                    FROM crime
+                    join type_of_crime on crime.type_c = type_of_crime.id order by type_c;
+                    """)
+            records = c.fetchall()
+
+        global count
+        count = 0
+        for record in records:
+            if count % 2 == 0:
+                self.my_tree.insert(parent='', index='end', iid=count, text='',
+                                    values=(record[0], record[1], record[2], record[3]), tags=('evenrow',))
+            else:
+                self.my_tree.insert(parent='', index='end', iid=count, text='',
+                                    values=(record[0], record[1], record[2], record[3]), tags=('oddrow',))
+            count += 1
+
+        conn.commit()
+        conn.close()
+
+    def remove_all(self):
+        for record in self.my_tree.get_children():
+            self.my_tree.delete(record)
+
+    def update_data(self):
+        conn = sqlite3.connect('Interpol.db')
+        c = conn.cursor()
+        c.execute(f"SELECT id FROM type_of_crime WHERE name = '{self.tc_combo.get()}'")
+        type_of_crime = c.fetchall()
+        # print(type_of_crime[0][0])
+        # print(tc_combo.get())
+
+        c.execute(
+            "UPDATE crime SET date_of_crime = :date_of_crime, place_of_crime = :place_of_crime, type_c = :type_c WHERE id = :id",
+            {
+                'id': self.id_entry.get(),
+                'date_of_crime': self.dc_entry.get(),
+                'place_of_crime': self.pc_entry.get(),
+                'type_c': type_of_crime[0][0]
+            }
+        )
+
+        conn.commit()
+        conn.close()
+        self.remove_all()
+        self.record_data()
+
+    def delete_data(self):
+        conn = sqlite3.connect('Interpol.db')
+        c = conn.cursor()
+        c.execute(f"DELETE FROM crime WHERE id = {self.id_entry.get()}")
+        conn.commit()
+        conn.close()
+        self.remove_all()
+        self.record_data()
+
+    def add_data(self):
+        conn = sqlite3.connect('Interpol.db')
+        c = conn.cursor()
+        c.execute(f"SELECT id FROM type_of_crime WHERE name = '{self.tc_combo.get()}'")
+        type_of_crime = c.fetchall()
+        # print(type_of_crime[0][0])
+        # print(tc_combo.get())
+
+        c.execute("INSERT INTO crime (date_of_crime, place_of_crime, type_c) "
+                  "VALUES (:date_of_crime, :place_of_crime, :type_c)",
+                  {
+                      'date_of_crime': self.dc_entry.get(),
+                      'place_of_crime': self.pc_entry.get(),
+                      'type_c': type_of_crime[0][0]
+                  }
+                  )
+
+        conn.commit()
+        conn.close()
+        self.remove_all()
+        self.record_data()
+
+    def select_record(self, event):
+        self.dc_entry.delete(0, END)
+        self.id_entry.delete(0, END)
+        self.tc_combo.set("")
+        self.pc_entry.delete(0, END)
+
+        selected = self.my_tree.focus()
+        values = self.my_tree.item(selected, 'values')
+
+        self.id_entry.insert(0, values[0])
+        self.dc_entry.insert(0, values[1])
+        self.pc_entry.insert(0, values[2])
+        self.tc_combo.set(values[3])
+
+    def record_data(self):
+        conn = sqlite3.connect('Interpol.db')
+        c = conn.cursor()
         c.execute("""SELECT crime.id, date_of_crime, place_of_crime, type_of_crime.name
-                FROM crime
-                join type_of_crime on crime.type_c = type_of_crime.id order by date_of_crime desc;
-                """)
+            FROM crime
+            join type_of_crime on crime.type_c = type_of_crime.id;
+            """)
         records = c.fetchall()
 
-    if col_index == '#3':
-        c.execute("""SELECT crime.id, date_of_crime, place_of_crime, type_of_crime.name
-                FROM crime
-                join type_of_crime on crime.type_c = type_of_crime.id order by place_of_crime;
-                """)
-        records = c.fetchall()
+        global count
+        count = 0
+        for record in records:
+            if count % 2 == 0:
+                self.my_tree.insert(parent='', index='end', iid=count, text='',
+                                    values=(record[0], record[1], record[2], record[3]), tags=('evenrow',))
+            else:
+                self.my_tree.insert(parent='', index='end', iid=count, text='',
+                                    values=(record[0], record[1], record[2], record[3]), tags=('oddrow',))
+            count += 1
+        count = 0
+        conn.commit()
+        conn.close()
 
-    if col_index == '#4':
-        c.execute("""SELECT crime.id, date_of_crime, place_of_crime, type_of_crime.name
-                FROM crime
-                join type_of_crime on crime.type_c = type_of_crime.id order by type_c;
-                """)
-        records = c.fetchall()
+    # Style
 
-    global count
-    count = 0
-    for record in records:
-        if count % 2 == 0:
-            my_tree.insert(parent='', index='end', iid=count, text='',
-                           values=(record[0], record[1], record[2], record[3]), tags=('evenrow',))
-        else:
-            my_tree.insert(parent='', index='end', iid=count, text='',
-                           values=(record[0], record[1], record[2], record[3]), tags=('oddrow',))
-        count += 1
+    # Create frame
 
+    # Format columns
+    def run_crimes(self):
+        self.my_tree.column("#0", width=0, stretch=NO)
+        self.my_tree.column("id", anchor=CENTER, width=50, minwidth=40)
+        self.my_tree.column("date_of_crime", anchor=CENTER, width=200, minwidth=180)
+        self.my_tree.column("place_of_crime", anchor=CENTER, width=200, minwidth=180)
+        self.my_tree.column("type_c", anchor=CENTER, width=200, minwidth=200)
+        # my_tree.column("details", anchor=CENTER, width=200, minwidth=180)
 
-    conn.commit()
-    conn.close()
+        # Create headings
+        self.my_tree.heading("#0", text="Label", anchor=W)  # anchor – положение данных в ячейке
+        self.my_tree.heading("id", text="id", anchor=CENTER)
+        self.my_tree.heading("date_of_crime", text="Дата преступления", anchor=CENTER)
+        self.my_tree.heading("place_of_crime", text="Место преступления", anchor=CENTER)
+        self.my_tree.heading("type_c", text="Тип преступления", anchor=CENTER)
+        # my_tree.heading("details", text="Детали", anchor=CENTER)
 
+        # Create striped row tags
 
-def remove_all():
-    for record in my_tree.get_children():
-        my_tree.delete(record)
+        self.my_tree.tag_configure('oddrow', background='white')
+        self.my_tree.tag_configure('evenrow', background='lightblue')
 
+        self.data_frame = LabelFrame(self.root, text="Добавить")
+        self.data_frame.pack(fill='x', expand=YES, padx=10)
 
-def update_data():
-    conn = sqlite3.connect('Interpol.db')
-    c = conn.cursor()
-    c.execute(f"SELECT id FROM type_of_crime WHERE name = '{tc_combo.get()}'")
-    type_of_crime = c.fetchall()
-    # print(type_of_crime[0][0])
-    # print(tc_combo.get())
+        self.id_label = Label(self.data_frame, text="Идентификатор")
+        self.id_label.grid(row=0, column=0, padx=10, pady=10)
+        self.id_entry = Entry(self.data_frame)
+        self.id_entry.grid(row=0, column=1, padx=10, pady=10)
 
-    c.execute(
-        "UPDATE crime SET date_of_crime = :date_of_crime, place_of_crime = :place_of_crime, type_c = :type_c WHERE id = :id",
-        {
-            'id': id_entry.get(),
-            'date_of_crime': dc_entry.get(),
-            'place_of_crime': pc_entry.get(),
-            'type_c': type_of_crime[0][0]
-        }
-    )
+        self.dc_label = Label(self.data_frame, text="Дата преступления")
+        self.dc_label.grid(row=0, column=2, padx=10, pady=10)
+        self.dc_entry = Entry(self.data_frame)
+        self.dc_entry.grid(row=0, column=3, padx=10, pady=10)
 
-    conn.commit()
-    conn.close()
-    remove_all()
-    record_data()
+        self.pc_label = Label(self.data_frame, text="Место преступления")
+        self.pc_label.grid(row=1, column=0, padx=10, pady=10)
+        self.pc_entry = Entry(self.data_frame)
+        self.pc_entry.grid(row=1, column=1, padx=10, pady=10)
 
+        self.tc_label = Label(self.data_frame, text="Тип преступления")
+        self.tc_label.grid(row=1, column=2, padx=10, pady=10)
+        self.tc_combo = ttk.Combobox(self.data_frame, width=40,
+                                     values=['КОРРУПЦИЯ', 'ПОДДЕЛКА ВАЛЮТЫ И ДОКУМЕНТОВ', 'ПРЕСТУПЛЕНИЕ ПРОТИВ ДЕТЕЙ',
+                                             'ПРЕСТУПЛЕНИЕ ПРОТИВ КУЛЬТУРНОГО НАСЛЕДИЯ', 'КИБЕР ПРИСТУПЛЕНИЕ',
+                                             'НЕЗАКОННЫЙ ОБОРОТ НАРКОТИКОВ', 'ЭКОЛОГИЧЕСКОЕ ПРЕСТУПЛЕНИЕ',
+                                             'ФИНАНСОВЫЕ ПРЕСТУПЛЕНИЯ', 'НЕЗАКОННЫЙ ОБОРОТ ОГНЕСТРЕЛЬНОГО ОРУЖИЯ',
+                                             'ТОРГОВЛЯ ЛЮДЬМИ И НЕЗАКОННЫЙ ВВОЗ МИГРАНТОВ', 'НЕЗАКОННЫЕ ТОВАРЫ',
+                                             'ПРЕСТУПЛЕНИЕ НА МОРЕ', 'ОРГАНИЗОВАННАЯ ПРЕСТУПНОСТЬ', 'ТЕРРОРИЗМ',
+                                             'ТРАНСПОРТНОЕ ПРЕСТУПЛЕНИЕ'])
+        self.tc_combo.grid(row=1, column=3, padx=10, pady=10)
 
-def delete_data():
-    conn = sqlite3.connect('Interpol.db')
-    c = conn.cursor()
-    c.execute(f"DELETE FROM crime WHERE id = {id_entry.get()}")
-    conn.commit()
-    conn.close()
-    remove_all()
-    record_data()
+        # Add buttons
+        self.button_frame = LabelFrame(self.root, text="Действия")
+        self.button_frame.pack(fill='x', expand=YES, padx=20)
 
+        self.add_button = Button(self.button_frame, text="Добавить", command=self.add_data)
+        self.add_button.grid(row=0, column=0, padx=10, pady=10)
 
-def add_data():
-    conn = sqlite3.connect('Interpol.db')
-    c = conn.cursor()
-    c.execute(f"SELECT id FROM type_of_crime WHERE name = '{tc_combo.get()}'")
-    type_of_crime = c.fetchall()
-    # print(type_of_crime[0][0])
-    # print(tc_combo.get())
+        self.update_button = Button(self.button_frame, text="Обновить", command=self.update_data)
+        self.update_button.grid(row=0, column=1, padx=10, pady=10)
 
-    c.execute("INSERT INTO crime (date_of_crime, place_of_crime, type_c) "
-              "VALUES (:date_of_crime, :place_of_crime, :type_c)",
-              {
-                  'date_of_crime': dc_entry.get(),
-                  'place_of_crime': pc_entry.get(),
-                  'type_c': type_of_crime[0][0]
-              }
-              )
+        self.remove_button = Button(self.button_frame, text="Удалить", command=self.delete_data)
+        self.remove_button.grid(row=0, column=2, padx=10, pady=10)
 
-    conn.commit()
-    conn.close()
-    remove_all()
-    record_data()
+        self.select_button = Button(self.button_frame, text="Выбрать")
+        self.select_button.grid(row=0, column=3, padx=10, pady=10)
 
+        self.my_tree.pack(pady=20)
 
-def select_record(e):
-    dc_entry.delete(0, END)
-    id_entry.delete(0, END)
-    # tc_entry.delete(0, END)
-    pc_entry.delete(0, END)
+        self.my_tree.bind("<ButtonRelease-1>", self.select_record)
+        self.my_tree.bind("<Button-1>", self.on_column_click)
+        self.my_tree.bind("<ButtonRelease-2>", self.remove_all())
 
-    selected = my_tree.focus()
-    values = my_tree.item(selected, 'values')
-
-    id_entry.insert(0, values[0])
-    dc_entry.insert(0, values[1])
-    pc_entry.insert(0, values[2])
-    tc_combo.set(values[3])
-
-
-def record_data():
-    conn = sqlite3.connect('Interpol.db')
-    c = conn.cursor()
-    c.execute("""SELECT crime.id, date_of_crime, place_of_crime, type_of_crime.name
-        FROM crime
-        join type_of_crime on crime.type_c = type_of_crime.id;
-        """)
-    records = c.fetchall()
-
-    global count
-    count = 0
-    for record in records:
-        if count % 2 == 0:
-            my_tree.insert(parent='', index='end', iid=count, text='',
-                           values=(record[0], record[1], record[2], record[3]), tags=('evenrow',))
-        else:
-            my_tree.insert(parent='', index='end', iid=count, text='',
-                           values=(record[0], record[1], record[2], record[3]), tags=('oddrow',))
-        count += 1
-    conn.commit()
-    conn.close()
-
-
-root = Tk()
-root.geometry('1000x500')
-root.title('Картотека интерпола')
-root.resizable(width=False, height=False)
-
-# Style
-style = ttk.Style()
-style.theme_use('default')
-style.configure('Treeview',
-                background="#D3D3D3",
-                foreground='black',
-                roweight=25,
-                fieldbackground='#D3D3D3',
-                wrap="word")
-
-style.map('Treeview',
-          background=[('selected', "#347083")])
-
-# Create frame
-tree_frame = Frame(root)
-tree_frame.pack(pady=10)
-
-tree_scroll = Scrollbar(tree_frame)
-tree_scroll.pack(side=RIGHT, fill=Y)
-
-my_tree = ttk.Treeview(tree_frame, yscrollcommand=tree_scroll.set, selectmode="extended", height=10)
-my_tree.pack()
-
-tree_scroll.config(command=my_tree.yview)
-# Define columns
-my_tree['columns'] = ("id", "date_of_crime", "place_of_crime", "type_c")
-
-# Format columns
-my_tree.column("#0", width=0, stretch=NO)
-my_tree.column("id", anchor=CENTER, width=50, minwidth=40)
-my_tree.column("date_of_crime", anchor=CENTER, width=200, minwidth=180)
-my_tree.column("place_of_crime", anchor=CENTER, width=200, minwidth=180)
-my_tree.column("type_c", anchor=CENTER, width=200, minwidth=200)
-# my_tree.column("details", anchor=CENTER, width=200, minwidth=180)
-
-# Create headings
-my_tree.heading("#0", text="Label", anchor=W)  # anchor – положение данных в ячейке
-my_tree.heading("id", text="id", anchor=CENTER)
-my_tree.heading("date_of_crime", text="Дата преступления", anchor=CENTER)
-my_tree.heading("place_of_crime", text="Место преступления", anchor=CENTER)
-my_tree.heading("type_c", text="Тип преступления", anchor=CENTER)
-# my_tree.heading("details", text="Детали", anchor=CENTER)
-
-
-# Create striped row tags
-
-my_tree.tag_configure('oddrow', background='white')
-my_tree.tag_configure('evenrow', background='lightblue')
-
-data_frame = LabelFrame(root, text="Добавить")
-data_frame.pack(fill='x', expand=YES, padx=10)
-
-id_label = Label(data_frame, text="Идентификатор")
-id_label.grid(row=0, column=0, padx=10, pady=10)
-id_entry = Entry(data_frame)
-id_entry.grid(row=0, column=1, padx=10, pady=10)
-
-dc_label = Label(data_frame, text="Дата преступления")
-dc_label.grid(row=0, column=2, padx=10, pady=10)
-dc_entry = Entry(data_frame)
-dc_entry.grid(row=0, column=3, padx=10, pady=10)
-
-pc_label = Label(data_frame, text="Место преступления")
-pc_label.grid(row=1, column=0, padx=10, pady=10)
-pc_entry = Entry(data_frame)
-pc_entry.grid(row=1, column=1, padx=10, pady=10)
-
-tc_label = Label(data_frame, text="Тип преступления")
-tc_label.grid(row=1, column=2, padx=10, pady=10)
-tc_combo = ttk.Combobox(data_frame, width=40, values=['КОРРУПЦИЯ', 'ПОДДЕЛКА ВАЛЮТЫ И ДОКУМЕНТОВ', 'ПРЕСТУПЛЕНИЕ ПРОТИВ ДЕТЕЙ',
-                                            'ПРЕСТУПЛЕНИЕ ПРОТИВ КУЛЬТУРНОГО НАСЛЕДИЯ', 'КИБЕР ПРИСТУПЛЕНИЕ',
-                                            'НЕЗАКОННЫЙ ОБОРОТ НАРКОТИКОВ', 'ЭКОЛОГИЧЕСКОЕ ПРЕСТУПЛЕНИЕ',
-                                            'ФИНАНСОВЫЕ ПРЕСТУПЛЕНИЯ', 'НЕЗАКОННЫЙ ОБОРОТ ОГНЕСТРЕЛЬНОГО ОРУЖИЯ',
-                                            'ТОРГОВЛЯ ЛЮДЬМИ И НЕЗАКОННЫЙ ВВОЗ МИГРАНТОВ', 'НЕЗАКОННЫЕ ТОВАРЫ',
-                                            'ПРЕСТУПЛЕНИЕ НА МОРЕ', 'ОРГАНИЗОВАННАЯ ПРЕСТУПНОСТЬ', 'ТЕРРОРИЗМ',
-                                            'ТРАНСПОРТНОЕ ПРЕСТУПЛЕНИЕ'])
-tc_combo.grid(row=1, column=3, padx=10, pady=10)
-
-# Add buttons
-button_frame = LabelFrame(root, text="Действия")
-button_frame.pack(fill='x', expand=YES, padx=20)
-
-add_button = Button(button_frame, text="Добавить", command=add_data)
-add_button.grid(row=0, column=0, padx=10, pady=10)
-
-update_button = Button(button_frame, text="Обновить", command=update_data)
-update_button.grid(row=0, column=1, padx=10, pady=10)
-
-remove_button = Button(button_frame, text="Удалить", command=delete_data)
-remove_button.grid(row=0, column=2, padx=10, pady=10)
-
-select_button = Button(button_frame, text="Выбрать")
-select_button.grid(row=0, column=3, padx=10, pady=10)
-
-my_tree.pack(pady=20)
-
-my_tree.bind("<ButtonRelease-1>", select_record)
-my_tree.bind("<Button-1>", on_column_click)
-
-record_data()
-root.mainloop()
+        self.record_data()
