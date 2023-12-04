@@ -8,6 +8,7 @@ root = Tk()
 root.geometry('1000x500')
 root.title('Картотека интерпола')
 root.resizable(width=False, height=False)
+tab_control = ttk.Notebook(root)
 
 style = ttk.Style()
 style.theme_use('default')
@@ -20,6 +21,7 @@ style.configure('Treeview',
 
 style.map('Treeview', background=[('selected', "#347083")])
 
-crimes.crimes(root)
+crimes.crimes(root, tab_control)
 
+tab_control.pack(expand=1, fill='both')
 root.mainloop()
