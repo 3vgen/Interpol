@@ -50,6 +50,12 @@ class crimes:
         c = conn.cursor()
         global records
         # print("Нажатие на колонку номер", col_index.index(1))
+        if col_index == '#1':
+            c.execute("""SELECT crime.id, date_of_crime, place_of_crime, type_of_crime.name
+                           FROM crime
+                           join type_of_crime on crime.type_c = type_of_crime.id order by crime.id;
+                           """)
+            records = c.fetchall()
         if col_index == '#2':
             c.execute("""SELECT crime.id, date_of_crime, place_of_crime, type_of_crime.name
                     FROM crime
