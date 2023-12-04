@@ -4,11 +4,12 @@ import sqlite3
 import textwrap
 
 
-# def open_win():
-#     win = Toplevel()
-#     win.geometry('200x200+300+300')
-#     l = Label(win, text='Toplevel', font='Arial 15 bold', fg='Black').pack()
-#     # win.overrideredirect(1)
+def open_win():
+    win = Toplevel()
+    win.geometry('600x400')
+    l = Label(win, text='Toplevel', font='Arial 15 bold', fg='Black').pack()
+    # win.overrideredirect(1)
+
 
 class personalities:
     def __init__(self, root, tab_control):
@@ -181,10 +182,12 @@ class personalities:
         for record in records:
             if count % 2 == 0:
                 self.person_tree.insert(parent='', index='end', iid=count, text='',
-                                        values=(record[0], record[1], record[2], record[3], record[4]), tags=('evenrow',))
+                                        values=(record[0], record[1], record[2], record[3], record[4]),
+                                        tags=('evenrow',))
             else:
                 self.person_tree.insert(parent='', index='end', iid=count, text='',
-                                        values=(record[0], record[1], record[2], record[3], record[4]), tags=('oddrow',))
+                                        values=(record[0], record[1], record[2], record[3], record[4]),
+                                        tags=('oddrow',))
             count += 1
         count = 0
         conn.commit()
@@ -257,13 +260,13 @@ class personalities:
         self.remove_button = Button(self.button_frame, text="Удалить", command=self.delete_data)
         self.remove_button.grid(row=0, column=2, padx=10, pady=10)
 
-        self.select_button = Button(self.button_frame, text="Выбрать")
+        self.select_button = Button(self.button_frame, text="Открыть подробную информацию", command=open_win)
         self.select_button.grid(row=0, column=3, padx=10, pady=10)
 
         self.person_tree.pack(pady=20)
 
         self.person_tree.bind("<ButtonRelease-1>", self.select_record)
         # self.person_tree.bind("<Button-1>", self.on_column_click)
-        self.person_tree.bind("<ButtonRelease-2>", self.remove_all())
+        # self.person_tree.bind("<ButtonRelease-2>", self.prprpr())
 
         self.record_data()
