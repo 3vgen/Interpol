@@ -1,6 +1,7 @@
 from tkinter import *
 from tkinter import ttk
 import crimes
+import personalities
 import sqlite3
 import textwrap
 
@@ -22,6 +23,7 @@ style.configure('Treeview',
 style.map('Treeview', background=[('selected', "#347083")])
 
 crimes.crimes(root, tab_control)
+personalities.personalities(root, tab_control)
 
 tab_control.pack(expand=1, fill='both')
 root.mainloop()
