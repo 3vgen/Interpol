@@ -32,11 +32,9 @@ class crimes:
         self.select_button = None
         self.update_button = None
         self.add_button = None
-        # self.button_frame = None
         self.pc_entry = None
         self.dc_entry = None
         self.dc_label = None
-        # self.data_frame = None
         self.id_entry = None
         self.id_label = None
         self.my_tree = None
