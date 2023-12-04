@@ -105,18 +105,19 @@ class personalities:
     def update_data(self):
         conn = sqlite3.connect('Interpol.db')
         c = conn.cursor()
-        c.execute(f"SELECT id FROM type_of_crime WHERE name = '{self.tc_combo.get()}'")
-        type_of_crime = c.fetchall()
         # print(type_of_crime[0][0])
         # print(tc_combo.get())
 
         c.execute(
-            "UPDATE crime SET date_of_crime = :date_of_crime, place_of_crime = :place_of_crime, type_c = :type_c WHERE id = :id",
+            "UPDATE person SET forename = :forename, family_name = :family_name, date_of_birth = :date_of_birth, "
+            "nationality = :nationality WHERE id = :id",
             {
-                'id': self.id_entry.get(),
-                'date_of_crime': self.n_entry.get(),
-                'place_of_crime': self.f_entry.get(),
-                'type_c': type_of_crime[0][0]
+                'forename': self.n_entry.get(),
+                'family_name': self.f_entry.get(),
+                'date_of_birth': self.db_entry.get(),
+                'nationality': self.nt_entry.get(),
+                'id': self.id_entry.get()
+
             }
         )
 
@@ -128,7 +129,7 @@ class personalities:
     def delete_data(self):
         conn = sqlite3.connect('Interpol.db')
         c = conn.cursor()
-        c.execute(f"DELETE FROM crime WHERE id = {self.id_entry.get()}")
+        c.execute(f"DELETE FROM person WHERE id = {self.id_entry.get()}")
         conn.commit()
         conn.close()
         self.remove_all()
@@ -137,17 +138,15 @@ class personalities:
     def add_data(self):
         conn = sqlite3.connect('Interpol.db')
         c = conn.cursor()
-        c.execute(f"SELECT id FROM type_of_crime WHERE name = '{self.tc_combo.get()}'")
-        type_of_crime = c.fetchall()
-        # print(type_of_crime[0][0])
-        # print(tc_combo.get())
 
-        c.execute("INSERT INTO crime (date_of_crime, place_of_crime, type_c) "
-                  "VALUES (:date_of_crime, :place_of_crime, :type_c)",
+        c.execute("INSERT INTO person (forename, family_name, nationality, date_of_birth) "
+                  "VALUES (:forename, :family_name, :nationality, :date_of_birth)",
                   {
-                      'date_of_crime': self.n_entry.get(),
-                      'place_of_crime': self.f_entry.get(),
-                      'type_c': type_of_crime[0][0]
+                      'forename': self.n_entry.get(),
+                      'family_name': self.f_entry.get(),
+                      'nationality': self.nt_entry.get(),
+                      'date_of_birth': self.db_entry.get(),
+
                   }
                   )
 
