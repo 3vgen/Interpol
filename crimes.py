@@ -11,29 +11,36 @@ import textwrap
 #     # win.overrideredirect(1)
 
 class crimes:
-    def __init__(self, root):
+    def __init__(self, root, tab_control):
+        self.root = root
+        self.tab_control = tab_control
+        crime_tab = ttk.Frame(self.tab_control)
+        tab_control.add(crime_tab, text="Преступления")
+
+        tree_frame = Frame(crime_tab)
+        tree_frame.pack(pady=10)
+
+        tree_scroll = Scrollbar(tree_frame)
+        tree_scroll.pack(side=RIGHT, fill=Y)
+
+        self.button_frame = LabelFrame(crime_tab, text="Действия")
+        self.data_frame = LabelFrame(crime_tab, text="Данные")
+
         self.tc_label = None
         self.remove_button = None
         self.tc_combo = None
         self.select_button = None
         self.update_button = None
         self.add_button = None
-        self.button_frame = None
+        # self.button_frame = None
         self.pc_entry = None
         self.dc_entry = None
         self.dc_label = None
-        self.data_frame = None
+        # self.data_frame = None
         self.id_entry = None
         self.id_label = None
-        self.root = root
         self.my_tree = None
         self.pc_label = None
-
-        tree_frame = Frame(root)
-        tree_frame.pack(pady=10)
-
-        tree_scroll = Scrollbar(tree_frame)
-        tree_scroll.pack(side=RIGHT, fill=Y)
 
         self.my_tree = ttk.Treeview(tree_frame, yscrollcommand=tree_scroll.set, selectmode="extended", height=10)
         self.my_tree.pack()
@@ -194,9 +201,9 @@ class crimes:
     def run_crimes(self):
         self.my_tree.column("#0", width=0, stretch=NO)
         self.my_tree.column("id", anchor=CENTER, width=50, minwidth=40)
-        self.my_tree.column("date_of_crime", anchor=CENTER, width=200, minwidth=180)
-        self.my_tree.column("place_of_crime", anchor=CENTER, width=200, minwidth=180)
-        self.my_tree.column("type_c", anchor=CENTER, width=200, minwidth=200)
+        self.my_tree.column("date_of_crime", anchor=CENTER, width=120, minwidth=120)
+        self.my_tree.column("place_of_crime", anchor=CENTER, width=130, minwidth=130)
+        self.my_tree.column("type_c", anchor=CENTER, width=250, minwidth=250)
         # my_tree.column("details", anchor=CENTER, width=200, minwidth=180)
 
         # Create headings
@@ -212,7 +219,6 @@ class crimes:
         self.my_tree.tag_configure('oddrow', background='white')
         self.my_tree.tag_configure('evenrow', background='lightblue')
 
-        self.data_frame = LabelFrame(self.root, text="Добавить")
         self.data_frame.pack(fill='x', expand=YES, padx=10)
 
         self.id_label = Label(self.data_frame, text="Идентификатор")
@@ -243,7 +249,6 @@ class crimes:
         self.tc_combo.grid(row=1, column=3, padx=10, pady=10)
 
         # Add buttons
-        self.button_frame = LabelFrame(self.root, text="Действия")
         self.button_frame.pack(fill='x', expand=YES, padx=20)
 
         self.add_button = Button(self.button_frame, text="Добавить", command=self.add_data)
