@@ -23,7 +23,7 @@ style.configure('Treeview',
 style.map('Treeview', background=[('selected', "#347083")])
 
 crimes.crimes(root, tab_control)
-personalities.personalities(root, tab_control)
+personalities.Personalities(root, tab_control)
 
 tab_control.pack(expand=1, fill='both')
 root.mainloop()
