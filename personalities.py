@@ -4,15 +4,30 @@ import sqlite3
 import textwrap
 
 
-def open_win():
-    win = Toplevel()
-    win.geometry('600x400')
-    l = Label(win, text='Toplevel', font='Arial 15 bold', fg='Black').pack()
-    # win.overrideredirect(1)
+class SubRoot:
+    def __init__(self, id_):
+        self.id = id_
+        print(self.id)
+        self.label = None
+        self.win = None
+
+    def run(self):
+        self.win = Toplevel()
+        self.win.geometry('600x400')
+        self.label = Label(self.win, text='Личные данные преступника', font='Arial 15 bold', fg='Black')
+        self.label.pack()
 
 
-class personalities:
+# def open_win():
+#     win = Toplevel()
+#     win.geometry('600x400')
+#     l = Label(win, text='Toplevel', font='Arial 15 bold', fg='Black').pack()
+#     # win.overrideredirect(1)
+
+
+class Personalities:
     def __init__(self, root, tab_control):
+        self.sb_rt = None
         self.root = root
         self.tab_control = tab_control
         person_tab = ttk.Frame(self.tab_control)
@@ -171,6 +186,7 @@ class personalities:
         self.f_entry.insert(0, values[2])
         self.db_entry.insert(0, values[3])
         self.nt_entry.insert(0, values[4])
+        self.sb_rt = SubRoot(self.id_entry.get())
 
     def record_data(self):
         conn = sqlite3.connect('Interpol.db')
@@ -260,7 +276,8 @@ class personalities:
         self.remove_button = Button(self.button_frame, text="Удалить", command=self.delete_data)
         self.remove_button.grid(row=0, column=2, padx=10, pady=10)
 
-        self.select_button = Button(self.button_frame, text="Открыть подробную информацию", command=open_win)
+        self.sb_rt = SubRoot(self.id_entry.get())
+        self.select_button = Button(self.button_frame, text="Открыть подробную информацию", command=self.sb_rt.run)
         self.select_button.grid(row=0, column=3, padx=10, pady=10)
 
         self.person_tree.pack(pady=20)
@@ -268,5 +285,4 @@ class personalities:
         self.person_tree.bind("<ButtonRelease-1>", self.select_record)
         # self.person_tree.bind("<Button-1>", self.on_column_click)
         # self.person_tree.bind("<ButtonRelease-2>", self.prprpr())
-
         self.record_data()
