@@ -48,6 +48,52 @@ class crimes:
         self.my_tree['columns'] = ("id", "date_of_crime", "place_of_crime", "type_c")
         self.run_crimes()
 
+    def search(self):
+        query = "SELECT crime.id, date_of_crime, place_of_crime, type_of_crime.name FROM crime JOIN type_of_crime on crime.type_c = type_of_crime.id WHERE 1=1"
+
+        id = self.id_entry.get()
+        pc = self.pc_entry.get()
+        dc = self.dc_entry.get()
+        tc = self.tc_combo.get()
+        if tc != "":
+            # tc = 'type_c'
+            query += f" AND type_c = (SELECT id FROM type_of_crime WHERE name = '{tc}')"
+
+        if id != "":
+            # id = 'id'
+            query += f" AND crime.id = {id}"
+
+        if dc != "":
+            # dc = 'date_of_crime'
+            query += f" AND date_of_crime = '{dc}'"
+
+        if pc != "":
+            # pc = 'place_of_crime'
+            query += f" AND place_of_crime = '{pc}'"
+
+        conn = sqlite3.connect('Interpol.db')
+
+        c = conn.cursor()
+        c.execute(query)
+        records = c.fetchall()
+        # print(records)
+        
+        self.remove_all()
+        global count
+        count = 0
+        for record in records:
+            if count % 2 == 0:
+                self.my_tree.insert(parent='', index='end', iid=count, text='',
+                                    values=(record[0], record[1], record[2], record[3]), tags=('evenrow',))
+            else:
+                self.my_tree.insert(parent='', index='end', iid=count, text='',
+                                    values=(record[0], record[1], record[2], record[3]), tags=('oddrow',))
+            count += 1
+        count = 0
+
+        conn.commit()
+        conn.close()
+
     def on_column_click(self, event):
         self.remove_all()
         col_index = self.my_tree.identify_column(event.x)
@@ -258,7 +304,7 @@ class crimes:
         self.remove_button = Button(self.button_frame, text="Удалить", command=self.delete_data)
         self.remove_button.grid(row=0, column=2, padx=10, pady=10)
 
-        self.select_button = Button(self.button_frame, text="Выбрать")
+        self.select_button = Button(self.button_frame, text="Выбрать", command=self.search)
         self.select_button.grid(row=0, column=3, padx=10, pady=10)
 
         self.my_tree.pack(pady=20)

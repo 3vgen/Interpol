@@ -7,17 +7,42 @@ import textwrap
 class SubRoot:
     def __init__(self, id_):
         self.id = id_
+
         print(self.id)
         self.label = None
         self.win = None
+        self.data_frame = None
+        self.gender_label = None
+        self.height_label = None
+        self.h_colour_label = None
+        self.e_colour_label = None
+        self.place_of_birth_label = None
+        self.charges_label = None
+        self.nickname_label = None
+        self.languages_spoken_label = None
 
     def run(self):
         self.win = Toplevel()
         self.win.geometry('600x400')
         self.label = Label(self.win, text='Личные данные преступника', font='Arial 15 bold', fg='Black')
         self.label.pack()
+        self.data_frame = LabelFrame(self.win, text="Данные")
+        self.data_frame.pack()
 
+        self.gender_label = Label(self.data_frame, text="Пол")
+        self.gender_label.grid(row=0, column=0, padx=10, pady=10)
 
+        self.height_label = Label(self.data_frame, text="Рост")
+        self.height_label.grid(row=1, column=0, padx=10, pady=10)
+
+        self.h_colour_label = Label(self.data_frame, text="Цвет волос")
+        self.h_colour_label.grid(row=2, column=0, padx=10, pady=10)
+
+        self.e_colour_label = Label(self.data_frame, text="Цвет глаз")
+        self.e_colour_label.grid(row=3, column=0, padx=10, pady=10)
+
+        self.e_colour_label = Label(self.languages_spoken_label, text="Цвет глаз")
+        self.e_colour_label.grid(row=3, column=0, padx=10, pady=10)
 # def open_win():
 #     win = Toplevel()
 #     win.geometry('600x400')
