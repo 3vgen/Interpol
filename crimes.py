@@ -77,7 +77,7 @@ class crimes:
         c.execute(query)
         records = c.fetchall()
         # print(records)
-        
+
         self.remove_all()
         global count
         count = 0
@@ -304,7 +304,7 @@ class crimes:
         self.remove_button = Button(self.button_frame, text="Удалить", command=self.delete_data)
         self.remove_button.grid(row=0, column=2, padx=10, pady=10)
 
-        self.select_button = Button(self.button_frame, text="Выбрать", command=self.search)
+        self.select_button = Button(self.button_frame, text="Поиск", command=self.search)
         self.select_button.grid(row=0, column=3, padx=10, pady=10)
 
         self.my_tree.pack(pady=20)

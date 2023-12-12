@@ -12,18 +12,34 @@ class SubRoot:
         self.label = None
         self.win = None
         self.data_frame = None
+
         self.gender_label = None
+        self.gender_entry = None
+
         self.height_label = None
+        self.height_entry = None
+
         self.h_colour_label = None
+        self.h_colour_entry = None
+
+        self.e_colour_entry = None
         self.e_colour_label = None
+
         self.place_of_birth_label = None
+        self.place_of_birth_entry = None
+
+        self.charges_entry = None
         self.charges_label = None
+
+        self.nickname_entry = None
         self.nickname_label = None
+
+        self.languages_spoken_entry = None
         self.languages_spoken_label = None
 
     def run(self):
         self.win = Toplevel()
-        self.win.geometry('600x400')
+        self.win.geometry('800x1000')
         self.label = Label(self.win, text='Личные данные преступника', font='Arial 15 bold', fg='Black')
         self.label.pack()
         self.data_frame = LabelFrame(self.win, text="Данные")
@@ -31,18 +47,43 @@ class SubRoot:
 
         self.gender_label = Label(self.data_frame, text="Пол")
         self.gender_label.grid(row=0, column=0, padx=10, pady=10)
+        self.gender_entry = Entry(self.data_frame, width=10)
+        self.gender_entry.grid(row=0, column=1, padx=10, pady=10)
 
         self.height_label = Label(self.data_frame, text="Рост")
         self.height_label.grid(row=1, column=0, padx=10, pady=10)
+        self.height_entry = Entry(self.data_frame)
+        self.height_entry.grid(row=1, column=1, padx=10, pady=10)
 
         self.h_colour_label = Label(self.data_frame, text="Цвет волос")
         self.h_colour_label.grid(row=2, column=0, padx=10, pady=10)
+        self.h_colour_entry = Entry(self.data_frame)
+        self.h_colour_entry.grid(row=2, column=1, padx=10, pady=10)
 
         self.e_colour_label = Label(self.data_frame, text="Цвет глаз")
         self.e_colour_label.grid(row=3, column=0, padx=10, pady=10)
+        self.e_colour_entry = Entry(self.data_frame)
+        self.e_colour_entry.grid(row=3, column=1, padx=10, pady=10)
 
-        self.e_colour_label = Label(self.languages_spoken_label, text="Цвет глаз")
-        self.e_colour_label.grid(row=3, column=0, padx=10, pady=10)
+        self.languages_spoken_label = Label(self.data_frame, text="Языки")
+        self.languages_spoken_label.grid(row=4, column=0, padx=10, pady=10)
+        self.languages_spoken_entry = Entry(self.data_frame)
+        self.languages_spoken_entry.grid(row=4, column=1, padx=10, pady=10)
+
+        self.nickname_label = Label(self.data_frame, text="Кличка")
+        self.nickname_label.grid(row=5, column=0, padx=10, pady=10)
+        self.nickname_entry = Entry(self.data_frame)
+        self.nickname_entry.grid(row=5, column=1, padx=10, pady=10)
+
+        self.place_of_birth_label = Label(self.data_frame, text="Место рождения")
+        self.place_of_birth_label.grid(row=6, column=0, padx=10, pady=10)
+        self.place_of_birth_entry = Entry(self.data_frame)
+        self.place_of_birth_entry.grid(row=6, column=1, padx=10, pady=10)
+
+        self.charges_label = Label(self.data_frame, text="Отличительные черты")
+        self.charges_label.grid(row=7, column=0, padx=10, pady=10)
+        self.charges_entry = Text(self.data_frame, height=10, width=50)
+        self.charges_entry.grid(row=7, column=1, padx=10, pady=10)
 # def open_win():
 #     win = Toplevel()
 #     win.geometry('600x400')
