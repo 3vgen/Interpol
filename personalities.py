@@ -41,9 +41,6 @@ class SubRoot:
     def change_data(self):
         conn = sqlite3.connect('Interpol.db')
         c = conn.cursor()
-        # print(self.charges_entry.get('1.0', END))
-        c.execute(f"SELECT * FROM personal_data WHERE id_person = {self.ident}")
-        print(c.fetchall())
         c.execute(f"UPDATE personal_data SET gender = :gender, height = :height, hair_colour = :hair_colour, "
                   f"eyes_colour = :eyes_colour, languages_spoken = :languages_spoken, charges = :charges,"
                   f"nickname = :nickname, place_of_birth = :place_of_birth WHERE id_person = :id",
@@ -65,22 +62,25 @@ class SubRoot:
     def record_personal_info(self):
         conn = sqlite3.connect('Interpol.db')
         c = conn.cursor()
-
         c.execute(f"SELECT * FROM personal_data WHERE id_person = :id",
                   {
                       'id': self.ident
                   })
 
         records = c.fetchall()
-        # print(records[0])
-        self.gender_entry.insert(0, records[0][1])
-        self.height_entry.insert(0, records[0][2])
-        self.h_colour_entry.insert(0, records[0][3])
-        self.e_colour_entry.insert(0, records[0][4])
-        self.languages_spoken_entry.insert(0, records[0][5])
-        self.place_of_birth_entry.insert('1.0', records[0][6])
-        self.charges_entry.insert('1.0', records[0][7])
-        self.nickname_entry.insert(0, records[0][8])
+        if not records:
+            c.execute(f"INSERT INTO personal_data (id_person) VALUES ({self.ident})")
+        else:
+            self.gender_entry.insert(0, records[0][1])
+            self.height_entry.insert(0, records[0][2])
+            self.h_colour_entry.insert(0, records[0][3])
+            self.e_colour_entry.insert(0, records[0][4])
+            self.languages_spoken_entry.insert(0, records[0][5])
+            self.place_of_birth_entry.insert('1.0', records[0][6])
+            self.charges_entry.insert('1.0', records[0][7])
+            self.nickname_entry.insert(0, records[0][8])
+
+        # print(self.gender_entry())
         conn.commit()
         conn.close()
 
@@ -347,7 +347,6 @@ class Personalities:
         self.person_tree.column("nationality", anchor=CENTER, width=250, minwidth=250)
         self.person_tree.column("status", anchor=CENTER, width=120, minwidth=120)
 
-
         # Create headings
         self.person_tree.heading("#0", text="Label", anchor=W)  # anchor – положение данных в ячейке
         self.person_tree.heading("id", text="id", anchor=CENTER)
@@ -356,7 +355,6 @@ class Personalities:
         self.person_tree.heading("date_of_birth", text="Дата рождения", anchor=CENTER)
         self.person_tree.heading("nationality", text="Национальность", anchor=CENTER)
         self.person_tree.heading("status", text="Статус", anchor=CENTER)
-
 
         # my_tree.heading("details", text="Детали", anchor=CENTER)
 

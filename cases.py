@@ -178,11 +178,22 @@ class Cases:
         self.remove_all()
         self.record_data()
 
+    def close_case(self):
+        conn = sqlite3.connect('Interpol.db')
+        c = conn.cursor()
+
+        c.execute(f"UPDATE person SET status = 'Отбывает срок' WHERE id = {self.id_person_entry.get()}")
+        c.execute(f"UPDATE criminal_case SET status = 'ЗАКРЫТО' WHERE id = {self.id_entry.get()}")
+        conn.commit()
+        conn.close()
+        self.remove_all()
+        self.record_data()
+
     def make_case(self):
         conn = sqlite3.connect('Interpol.db')
         c = conn.cursor()
 
-        c.execute("INSERT INTO criminal_case (id_person, details, id_crime) VALUES (:id_person,:id_crime, :details)",
+        c.execute("INSERT INTO criminal_case (id_person, id_crime, details) VALUES (:id_person,:id_crime, :details)",
                   {
                       'id_crime': self.id_crime_entry.get(),
                       'id_person': self.id_person_entry.get(),
@@ -234,12 +245,12 @@ class Cases:
             if count % 2 == 0:
                 self.criminal_case_tree.insert(parent='', index='end', iid=count, text='',
                                                values=(
-                                               record[0], record[4], record[2], record[3], record[1], record[5]),
+                                               record[0], record[1], record[2], record[3], record[4], record[5]),
                                                tags=('evenrow',))
             else:
                 self.criminal_case_tree.insert(parent='', index='end', iid=count, text='',
                                                values=(
-                                               record[0], record[4], record[2], record[3], record[1], record[5]),
+                                               record[0], record[1], record[2], record[3], record[4], record[5]),
                                                tags=('oddrow',))
             count += 1
         count = 0
@@ -315,6 +326,9 @@ class Cases:
 
         self.select_button = Button(self.button_frame, text="Поиск", command=self.search)
         self.select_button.grid(row=0, column=3, padx=10, pady=10)
+
+        self.add_button = Button(self.button_frame, text="Закрыть дело", command=self.close_case)
+        self.add_button.grid(row=0, column=4, padx=10, pady=10)
 
         self.criminal_case_tree.pack(pady=20)
 
