@@ -12,6 +12,9 @@ import textwrap
 
 class crimes:
     def __init__(self, root, tab_control):
+        self.label_cr = None
+        self.label = None
+        self.win = None
         self.root = root
         self.tab_control = tab_control
         crime_tab = ttk.Frame(self.tab_control)
@@ -47,6 +50,31 @@ class crimes:
         # Define columns
         self.my_tree['columns'] = ("id", "date_of_crime", "place_of_crime", "type_c")
         self.run_crimes()
+
+    def show_criminals(self):
+        conn = sqlite3.connect('Interpol.db')
+        c = conn.cursor()
+        self.win = Toplevel()
+        self.win.geometry('800x1000')
+        self.label = Label(self.win, text='Участники преступления', font='Arial 15 bold', fg='Black')
+        self.label.pack()
+        self.data_frame = LabelFrame(self.win, text="Данные", background='#B6D7E4')
+        self.data_frame.pack()
+        c.execute("SELECT person.id, family_name, forename, nationality FROM person JOIN criminal_case ON "
+                  "criminal_case.id_person = person.id WHERE criminal_case.id_crime = 52")
+        records = c.fetchall()
+        print(records[0][0])
+        text = ""
+        for record in records:
+            for rc in record:
+                text += str(rc) + " "
+            text += '\n\n\n'
+        label = Label(self.data_frame, text=text, font='Arial 14')
+        label.pack()
+        # self.label_cr = Label(self.data_frame, font='Arial 15 bold', fg='Black')
+        conn.commit()
+        conn.close()
+
 
     def search(self):
         query = "SELECT crime.id, date_of_crime, place_of_crime, type_of_crime.name FROM crime JOIN type_of_crime on crime.type_c = type_of_crime.id WHERE 1=1"
@@ -305,6 +333,9 @@ class crimes:
         self.remove_button.grid(row=0, column=2, padx=10, pady=10)
 
         self.select_button = Button(self.button_frame, text="Поиск", command=self.search)
+        self.select_button.grid(row=0, column=3, padx=10, pady=10)
+
+        self.select_button = Button(self.button_frame, text="Посмотреть подельников", command=self.show_criminals)
         self.select_button.grid(row=0, column=3, padx=10, pady=10)
 
         self.my_tree.pack(pady=20)
