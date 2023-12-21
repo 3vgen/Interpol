@@ -41,7 +41,9 @@ class SubRoot:
     def change_data(self):
         conn = sqlite3.connect('Interpol.db')
         c = conn.cursor()
-        print(self.charges_entry.get('1.0', END))
+        # print(self.charges_entry.get('1.0', END))
+        c.execute(f"SELECT * FROM personal_data WHERE id_person = {self.ident}")
+        print(c.fetchall())
         c.execute(f"UPDATE personal_data SET gender = :gender, height = :height, hair_colour = :hair_colour, "
                   f"eyes_colour = :eyes_colour, languages_spoken = :languages_spoken, charges = :charges,"
                   f"nickname = :nickname, place_of_birth = :place_of_birth WHERE id_person = :id",
@@ -70,7 +72,7 @@ class SubRoot:
                   })
 
         records = c.fetchall()
-        print(records[0])
+        # print(records[0])
         self.gender_entry.insert(0, records[0][1])
         self.height_entry.insert(0, records[0][2])
         self.h_colour_entry.insert(0, records[0][3])
@@ -136,6 +138,7 @@ class SubRoot:
         self.charges_label.grid(row=7, column=0, padx=10, pady=10, sticky='W')
         self.charges_entry = Text(self.data_frame, height=10, width=50)
         self.charges_entry.grid(row=7, column=1, padx=10, pady=10, sticky='W')
+
         self.record_personal_info()
 
 
@@ -184,7 +187,7 @@ class Personalities:
 
         tree_scroll.config(command=self.person_tree.yview)
         # Define columns
-        self.person_tree['columns'] = ("id", "forename", "family_name", "date_of_birth", "nationality")
+        self.person_tree['columns'] = ("id", "forename", "family_name", "date_of_birth", "nationality", "status")
         self.run_personalities()
 
     # def on_column_click(self, event):
@@ -242,9 +245,6 @@ class Personalities:
     def update_data(self):
         conn = sqlite3.connect('Interpol.db')
         c = conn.cursor()
-        # print(type_of_crime[0][0])
-        # print(tc_combo.get())
-
         c.execute(
             "UPDATE person SET forename = :forename, family_name = :family_name, date_of_birth = :date_of_birth, "
             "nationality = :nationality WHERE id = :id",
@@ -322,11 +322,11 @@ class Personalities:
         for record in records:
             if count % 2 == 0:
                 self.person_tree.insert(parent='', index='end', iid=count, text='',
-                                        values=(record[0], record[1], record[2], record[3], record[4]),
+                                        values=(record[0], record[1], record[2], record[3], record[4], record[5]),
                                         tags=('evenrow',))
             else:
                 self.person_tree.insert(parent='', index='end', iid=count, text='',
-                                        values=(record[0], record[1], record[2], record[3], record[4]),
+                                        values=(record[0], record[1], record[2], record[3], record[4], record[5]),
                                         tags=('oddrow',))
             count += 1
         count = 0
@@ -345,6 +345,8 @@ class Personalities:
         self.person_tree.column("family_name", anchor=CENTER, width=120, minwidth=120)
         self.person_tree.column("date_of_birth", anchor=CENTER, width=130, minwidth=130)
         self.person_tree.column("nationality", anchor=CENTER, width=250, minwidth=250)
+        self.person_tree.column("status", anchor=CENTER, width=120, minwidth=120)
+
 
         # Create headings
         self.person_tree.heading("#0", text="Label", anchor=W)  # anchor – положение данных в ячейке
@@ -353,6 +355,8 @@ class Personalities:
         self.person_tree.heading("family_name", text="Фамилия", anchor=CENTER)
         self.person_tree.heading("date_of_birth", text="Дата рождения", anchor=CENTER)
         self.person_tree.heading("nationality", text="Национальность", anchor=CENTER)
+        self.person_tree.heading("status", text="Статус", anchor=CENTER)
+
 
         # my_tree.heading("details", text="Детали", anchor=CENTER)
 

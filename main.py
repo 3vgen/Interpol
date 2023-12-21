@@ -9,7 +9,7 @@ import sqlite3
 import textwrap
 
 root = Tk()
-root.geometry('1000x500')
+root.geometry('1000x540')
 root.title('Картотека интерпола')
 root.resizable(width=False, height=False)
 tab_control = ttk.Notebook(root)
