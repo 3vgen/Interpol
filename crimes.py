@@ -12,6 +12,7 @@ import textwrap
 
 class crimes:
     def __init__(self, root, tab_control):
+        self.current_user = 1
         self.label_cr = None
         self.label = None
         self.win = None
