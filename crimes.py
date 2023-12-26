@@ -1,3 +1,4 @@
+import tkinter.messagebox
 from tkinter import *
 from tkinter import ttk
 import sqlite3
@@ -12,7 +13,9 @@ import textwrap
 
 class crimes:
     def __init__(self, root, tab_control):
-        self.current_user = 1
+        self.show_all_data_button = None
+        self.show_my_crimes_button = None
+        self.current_user = 2
         self.label_cr = None
         self.label = None
         self.win = None
@@ -52,6 +55,35 @@ class crimes:
         self.my_tree['columns'] = ("id", "date_of_crime", "place_of_crime", "type_c")
         self.run_crimes()
 
+    def show_all_data(self):
+        self.remove_all()
+        self.record_data()
+
+    def show_my_crimes(self):
+        self.remove_all()
+        conn = sqlite3.connect('Interpol.db')
+        c = conn.cursor()
+        c.execute(f"""SELECT crime.id, date_of_crime, place_of_crime, type_of_crime.name
+                    FROM crime
+                    join type_of_crime on crime.type_c = type_of_crime.id
+                    WHERE userlabel = '{self.current_user}';
+                    """)
+        records = c.fetchall()
+
+        global count
+        count = 0
+        for record in records:
+            if count % 2 == 0:
+                self.my_tree.insert(parent='', index='end', iid=count, text='',
+                                    values=(record[0], record[1], record[2], record[3]), tags=('evenrow',))
+            else:
+                self.my_tree.insert(parent='', index='end', iid=count, text='',
+                                    values=(record[0], record[1], record[2], record[3]), tags=('oddrow',))
+            count += 1
+        count = 0
+        conn.commit()
+        conn.close()
+
     def show_criminals(self):
         conn = sqlite3.connect('Interpol.db')
         c = conn.cursor()
@@ -75,7 +107,6 @@ class crimes:
         # self.label_cr = Label(self.data_frame, font='Arial 15 bold', fg='Black')
         conn.commit()
         conn.close()
-
 
     def search(self):
         query = "SELECT crime.id, date_of_crime, place_of_crime, type_of_crime.name FROM crime JOIN type_of_crime on crime.type_c = type_of_crime.id WHERE 1=1"
@@ -178,56 +209,79 @@ class crimes:
     def update_data(self):
         conn = sqlite3.connect('Interpol.db')
         c = conn.cursor()
-        c.execute(f"SELECT id FROM type_of_crime WHERE name = '{self.tc_combo.get()}'")
-        type_of_crime = c.fetchall()
-        # print(type_of_crime[0][0])
-        # print(tc_combo.get())
+        c.execute(f"SELECT id_role FROM employee WHERE id = {self.current_user}")
+        role = c.fetchone()[0]
+        c.execute(f"SELECT userlabel FROM crime WHERE id = {self.id_entry.get()}")
+        user = c.fetchone()[0]
 
-        c.execute(
-            "UPDATE crime SET date_of_crime = :date_of_crime, place_of_crime = :place_of_crime, type_c = :type_c WHERE id = :id",
-            {
-                'id': self.id_entry.get(),
-                'date_of_crime': self.dc_entry.get(),
-                'place_of_crime': self.pc_entry.get(),
-                'type_c': type_of_crime[0][0]
-            }
-        )
+        if (role == 1 or role == 2) and self.current_user == user:
+            result = tkinter.messagebox.askquestion("Подтверждение действия",
+                                                    "Вы уверены, что хотите изменить данное преступление")
+            if result == "yes":
+                c.execute(f"SELECT id FROM type_of_crime WHERE name = '{self.tc_combo.get()}'")
+                type_of_crime = c.fetchall()
+                c.execute(
+                    "UPDATE crime SET date_of_crime = :date_of_crime, place_of_crime = :place_of_crime, type_c = :type_c "
+                    "WHERE id = :id",
+                    {
+                        'id': self.id_entry.get(),
+                        'date_of_crime': self.dc_entry.get(),
+                        'place_of_crime': self.pc_entry.get(),
+                        'type_c': type_of_crime[0][0]
+                    }
+                )
 
-        conn.commit()
-        conn.close()
-        self.remove_all()
-        self.record_data()
+                conn.commit()
+                conn.close()
+                self.remove_all()
+                self.record_data()
+
+        else:
+            tkinter.messagebox.showwarning(
+                message="Внимание, вы не можете изменять эти данные")
 
     def delete_data(self):
-        conn = sqlite3.connect('Interpol.db')
-        c = conn.cursor()
-        c.execute(f"DELETE FROM crime WHERE id = {self.id_entry.get()}")
-        conn.commit()
-        conn.close()
-        self.remove_all()
-        self.record_data()
+        result = tkinter.messagebox.askquestion("Подтверждение действия",
+                                                "Вы уверены, что хотите удалить данное преступление")
+        if result == "yes":
+            conn = sqlite3.connect('Interpol.db')
+            c = conn.cursor()
+            c.execute(f"DELETE FROM crime WHERE id = {self.id_entry.get()}")
+            conn.commit()
+            conn.close()
+            self.remove_all()
+            self.record_data()
 
     def add_data(self):
         conn = sqlite3.connect('Interpol.db')
         c = conn.cursor()
-        c.execute(f"SELECT id FROM type_of_crime WHERE name = '{self.tc_combo.get()}'")
-        type_of_crime = c.fetchall()
-        # print(type_of_crime[0][0])
-        # print(tc_combo.get())
+        c.execute(f"SELECT id_role FROM employee WHERE id = {self.current_user}")
+        role = c.fetchone()[0]
+        if role == 1 or role == 2:
+            result = tkinter.messagebox.askquestion("Подтверждение действия", "Вы уверены, что хотите добавить данное преступление")
+            if result == "yes":
+                c.execute(f"SELECT id FROM type_of_crime WHERE name = '{self.tc_combo.get()}'")
+                type_of_crime = c.fetchall()
+                c.execute("INSERT INTO crime (date_of_crime, place_of_crime, type_c, userlabel) "
+                          "VALUES (:date_of_crime, :place_of_crime, :type_c, :userlabel)",
+                          {
+                              'date_of_crime': self.dc_entry.get(),
+                              'place_of_crime': self.pc_entry.get(),
+                              'type_c': type_of_crime[0][0],
+                              'userlabel': self.current_user
+                          }
+                          )
 
-        c.execute("INSERT INTO crime (date_of_crime, place_of_crime, type_c) "
-                  "VALUES (:date_of_crime, :place_of_crime, :type_c)",
-                  {
-                      'date_of_crime': self.dc_entry.get(),
-                      'place_of_crime': self.pc_entry.get(),
-                      'type_c': type_of_crime[0][0]
-                  }
-                  )
+                self.remove_all()
+                self.record_data()
+                conn.commit()
+                conn.close()
 
-        conn.commit()
-        conn.close()
-        self.remove_all()
-        self.record_data()
+
+        else:
+            tkinter.messagebox.showwarning(
+                message="Внимание, вы не являетесь криминалистом, поэтому не можете регистрировать "
+                        "новые преступления")
 
     def select_record(self, event):
         self.dc_entry.delete(0, END)
@@ -337,12 +391,18 @@ class crimes:
         self.select_button.grid(row=0, column=3, padx=10, pady=10)
 
         self.select_button = Button(self.button_frame, text="Посмотреть подельников", command=self.show_criminals)
-        self.select_button.grid(row=0, column=3, padx=10, pady=10)
+        self.select_button.grid(row=0, column=4, padx=10, pady=10)
+
+        self.show_my_crimes_button = Button(self.button_frame, text="Посмотреть мои преступления", command=self.show_my_crimes)
+        self.show_my_crimes_button.grid(row=0, column=5, padx=10, pady=10)
+
+        self.show_all_data_button = Button(self.button_frame, text="Все данные", command=self.show_all_data)
+        self.show_all_data_button.grid(row=0, column=6, padx=10, pady=10)
 
         self.my_tree.pack(pady=20)
 
         self.my_tree.bind("<ButtonRelease-1>", self.select_record)
-        self.my_tree.bind("<Button-1>", self.on_column_click)
-        self.my_tree.bind("<ButtonRelease-2>", self.remove_all())
+        # self.my_tree.bind("<Button-1>", self.on_column_click)
+        # self.my_tree.bind("<ButtonRelease-2>", self.remove_all())
 
         self.record_data()
