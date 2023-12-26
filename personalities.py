@@ -6,6 +6,8 @@ import textwrap
 
 class SubRoot:
     def __init__(self, id_):
+        self.criminal_group_entry = None
+        self.criminal_group_label = None
         self.add_button = None
         self.ident = id_
 
@@ -138,6 +140,11 @@ class SubRoot:
         self.charges_label.grid(row=7, column=0, padx=10, pady=10, sticky='W')
         self.charges_entry = Text(self.data_frame, height=10, width=50)
         self.charges_entry.grid(row=7, column=1, padx=10, pady=10, sticky='W')
+
+        self.criminal_group_label = Label(self.data_frame, text="Преступная группировка")
+        self.criminal_group_label.grid(row=8, column=0, padx=10, pady=10, sticky='W')
+        self.criminal_group_entry = Entry(self.data_frame)
+        self.criminal_group_entry.grid(row=8, column=1, padx=10, pady=10, sticky='W')
 
         self.record_personal_info()
 

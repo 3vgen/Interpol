@@ -3,6 +3,7 @@ from tkinter import ttk
 
 import cases
 import crimes
+import criminal_group
 import personalities
 import cases
 import sqlite3
@@ -30,6 +31,7 @@ style.map('Treeview', background=[('selected', "#347083")])
 crimes.crimes(root, tab_control)
 personalities.Personalities(root, tab_control)
 cases.Cases(root, tab_control)
+criminal_group.CriminalGroup(root, tab_control)
 
 tab_control.pack(expand=1, fill='both')
 root.mainloop()
